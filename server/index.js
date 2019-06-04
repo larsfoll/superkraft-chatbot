@@ -1,26 +1,28 @@
-require('dotenv').config();
-const express = require('express');
+require('dotenv').config()
+const http = require('http')
+const express = require('express')
+const app = express()
+const server = http.createServer(app)
+const io = require('socket.io')(server)
 // const path = require('path');
-const http = require('http');
-const cookieParser = require('cookie-parser');
-const logger = require('morgan');
+const cookieParser = require('cookie-parser')
+const logger = require('morgan')
 
-const indexRouter = require('./routes/index');
+const { processMessage } = require('./config/dialogflow')
 
-const app = express();
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+app.use(logger('dev'))
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
+app.use(cookieParser())
 // app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
+io.on('connection', async (socket) => {
+  socket.on('message', async (data, callback) => {
+    const response = await processMessage(data)
+    return callback(response)
+  })
+})
 
-const server = http.createServer(app);
+server.listen(process.env.PORT, () => console.log(`Server running on http://${process.env.DOMAIN}:${process.env.PORT}`))
 
-server.listen(process.env.PORT, () =>
-  console.log(`Server running on http://${process.env.DOMAIN}:${process.env.PORT}`)
-);
-
-module.exports = app;
+module.exports = app
