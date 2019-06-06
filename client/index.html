@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Chatbot</title>
+</head>
+
+<body>
+
+  <ul class="chatbot"></ul>
+
+  <form>
+    <input type="text"></input>
+    <input type="submit"></input>
+    <div class="options">
+      <input type="button" onclick="submitOption(this.value)" value="Contact"></input>
+      <input type="button" onclick="submitOption(this.value)" value="Boitee"></input>
+    </div>
+  </form>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+  <script src="scripts/main.js"></script>
+</body>
+
+</html>

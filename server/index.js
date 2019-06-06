@@ -4,25 +4,21 @@ const express = require('express')
 const app = express()
 const server = http.createServer(app)
 const io = require('socket.io')(server)
-// const path = require('path');
 const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 
-const { processMessage } = require('./config/dialogflow')
+const { processMessage } = require('./functions')
 
 app.use(logger('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
-// app.use(express.static(path.join(__dirname, 'public')));
 
 io.on('connection', async (socket) => {
-  socket.on('message', async (data, callback) => {
+  socket.emit('dialogflow message', 'Yoo, waarmee kan ik u helpen?')
+  socket.on('message', async (data) => {
     const response = await processMessage(data)
-    return callback(response)
-  })
-  socket.on('dialogflow message', async (data) => {
-    console.log(data)
+    socket.emit('dialogflow message', response)
   })
 })
 

@@ -20,20 +20,19 @@ const sendWelcomeMessage = () => sessionClient.detectIntent({
 })
 
 const processMessage = async (message) => {
-  const { text } = message
   let result
   const request = {
     session: sessionPath,
     queryInput: {
       text: {
-        text,
+        text: message,
         languageCode: 'nl',
       },
     },
   }
   await sessionClient.detectIntent(request)
     .then(responses => {
-      result = responses[0]
+      result = responses[0].queryResult.fulfillmentText
     })
   return result
 }
