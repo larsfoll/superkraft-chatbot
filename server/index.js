@@ -21,6 +21,9 @@ io.on('connection', async (socket) => {
     const response = await processMessage(data)
     return callback(response)
   })
+  socket.on('dialogflow message', async (data) => {
+    console.log(data)
+  })
 })
 
 server.listen(process.env.PORT, () => console.log(`Server running on http://${process.env.DOMAIN}:${process.env.PORT}`))
