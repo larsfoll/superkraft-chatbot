@@ -9,16 +9,16 @@
 </head>
 
 <body>
-
+  <button type="button" class="initialize-conversation">Start chatting</button>
   <ul class="chatbot"></ul>
 
   <form>
-    <input type="text"></input>
-    <input type="submit"></input>
     <div class="options">
-      <input type="button" onclick="submitOption(this.value)" value="Contact"></input>
-      <input type="button" onclick="submitOption(this.value)" value="Boitee"></input>
+      <input type="button" onclick="submitOption(this.value)" value="Contact opnemen" />
+      <input type="button" onclick="submitOption(this.value)" value="Openingsuren" />
     </div>
+    <input type="text" />
+    <input type="submit" disabled />
   </form>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>

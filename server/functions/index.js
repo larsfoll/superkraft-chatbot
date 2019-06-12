@@ -3,7 +3,6 @@ const uuid = require('uuid')
 
 const sessionId = uuid.v4()
 
-// Create a new session
 const sessionClient = new dialogflow.SessionsClient({
   keyFilename: process.env.DF_SERVICE_ACCOUNT_PATH
 })
@@ -20,21 +19,25 @@ const sendWelcomeMessage = () => sessionClient.detectIntent({
 })
 
 const processMessage = async (message) => {
-  let result
-  const request = {
-    session: sessionPath,
-    queryInput: {
-      text: {
-        text: message,
-        languageCode: 'nl',
+  try {
+    let result
+    const request = {
+      session: sessionPath,
+      queryInput: {
+        text: {
+          text: message,
+          languageCode: 'nl',
+        },
       },
-    },
+    }
+    await sessionClient.detectIntent(request)
+      .then(responses => {
+        result = responses[0].queryResult.fulfillmentText
+      })
+    return result
+  } catch (error) {
+    return 'Er ging iets fout probeer later opnieuw.'
   }
-  await sessionClient.detectIntent(request)
-    .then(responses => {
-      result = responses[0].queryResult.fulfillmentText
-    })
-  return result
 }
 
 // const request = {
