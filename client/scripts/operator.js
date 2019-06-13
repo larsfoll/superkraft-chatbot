@@ -1,16 +1,15 @@
 const baseUrl = 'http://localhost:8000'
+const conversationsWrapper = document.querySelector('.conversations-wrapper')
 const conversationsList = document.querySelector('.conversations-wrapper > ul')
 const conversation = document.querySelector('.conversations-wrapper .conversation')
 const weekdays = new Array('zo', 'ma', 'di', 'wo', 'do', 'vr', 'za')
 const months = new Array('dec', 'jan', 'feb', 'mrt', 'apr', 'jun', 'jul', 'aug', 'sept', 'okt', 'nov')
 let currentConversationId;
 let socket;
+let results = 0;
+let allConversationsFetched = false
 
-// Formatted time should change
-// If different week 13 apr. om 14:22
-// If current day index is after or equal to current
-// If different year 10 jun. 2018 om 22:18
-
+// Format time based on type
 const formatTime = (time, type = null) => {
   const date = new Date(time)
   const timeElement = document.createElement('time')
@@ -41,6 +40,7 @@ const formatTime = (time, type = null) => {
   return timeElement
 }
 
+// Add message to list
 const createMessage = (message) => {
   const conversationMessages = document.querySelector('.conversation > ul')
   const listItem = document.createElement('li')
@@ -55,34 +55,40 @@ const createMessage = (message) => {
   conversationMessages.appendChild(listItem)
 }
 
+// Open a conversation
 const openConversation = (id, element) => {
+  // If the current conversation id is equal to the selected id
+  // there is no need to continue so stop the function
   if (currentConversationId === id) return
+
   const active = document.querySelector('.active')
   if (active) {
+    // Remove active class from previous active element
     active.classList.remove('active')
   }
   element.classList.toggle('active')
   currentConversationId = id
 
-  // if (!socket) {
-  //   console.log('no socket yet')
-  //   socket = io('http://localhost:8000')
-  //   socket.of
-  //   socket.on('dialogflow message', data => {
-  //     console.log(data)
-  //   })
-  // }
   fetch(`${baseUrl}/conversations/${id}`)
     .then(response => response.json())
     .then(messages => {
+      // Remove messages from the current conversation and add the new messages
+
+      // Select conversation
       const conversationMessages = document.querySelector('.conversation > ul')
+      // Make a clone with no children
       const conversationMessagesClone = conversationMessages.cloneNode(false)
+      // Replace the old conversation with the empty clone
+      // Otherwise the messages from the previous conversation would still be in the div
+      // And the new ones would be pushed to the div along with the old ones
       conversationMessages.parentNode.replaceChild(conversationMessagesClone, conversationMessages)
       messages.forEach(message => createMessage(message))
     })
+    // Always scroll to bottom of conversation on load
     .then(() => scrollToBottom())
 }
 
+// Adds a conversation to the list
 const addListItem = (conversation) => {
   const listItem = document.createElement('li')
 
@@ -98,10 +104,35 @@ const addListItem = (conversation) => {
   conversationsList.appendChild(listItem)
 }
 
-fetch(`${baseUrl}/conversations`)
+// Fetch the conversations
+const fetchConversations = () => fetch(`${baseUrl}/conversations?results=${results}`)
   .then(response => response.json())
-  .then(data => data.forEach(element => addListItem(element)))
+  .then(conversations => {
+    // When there are no more conversations to be fetched set var to true
+    // To remove the event listener onScrollConversationsList
+    if (conversations.length === 0) {
+      allConversationsFetched = true
+    }
+    conversations.forEach(single => addListItem(single))
+  })
 
-const scrollToBottom = () => {
-  conversation.scrollTop = conversation.scrollHeight
+const scrollToBottom = () => conversation.scrollTop = conversation.scrollHeight
+
+// When the user scrolls to the bottom of the list the next conversations will be fetched
+const onScrollConversationsList = () => {
+  // Remove the event listener and stop the function once all conversations are fetched
+  if (allConversationsFetched === true) {
+    conversationsList.removeEventListener('scroll', onScrollConversationsList)
+    return
+  }
+  // When the bottom is reached fetch the next 10 conversations
+  // First time it'll fetch results 1 to 10, second time 11 to 20 etc.
+  if (conversationsList.scrollTop === (conversationsList.scrollHeight - conversationsList.offsetHeight)) {
+    results = results + 10;
+    fetchConversations(results)
+  }
 }
+
+document.addEventListener('load', fetchConversations())
+
+conversationsList.addEventListener('scroll', onScrollConversationsList)

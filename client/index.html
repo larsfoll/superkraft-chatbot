@@ -9,15 +9,20 @@
 </head>
 
 <body>
+  <!-- On click the connection with the websocket will be established -->
   <button type="button" class="initialize-conversation">Start chatting</button>
+
+  <!-- Messages will be appended to the list -->
   <ul class="chatbot"></ul>
 
   <form>
     <div class="options">
+      <!-- Example options -->
       <input type="button" onclick="submitOption(this.value)" value="Contact opnemen" />
       <input type="button" onclick="submitOption(this.value)" value="Openingsuren" />
     </div>
     <input type="text" />
+    <!-- Will be enabled if input value is greater than 0 -->
     <input type="submit" disabled />
   </form>
 

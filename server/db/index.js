@@ -1,5 +1,6 @@
 const mysql = require('mysql')
 
+// Database connection
 const db = mysql.createConnection({
   host: process.env.DOMAIN,
   user: process.env.MYSQL_USER,

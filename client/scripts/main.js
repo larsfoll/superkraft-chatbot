@@ -6,6 +6,7 @@ const options = document.querySelector('.options')
 const sumbitButton = document.querySelector('input[type="submit"]')
 const initializeConversationBtn = document.querySelector('.initialize-conversation')
 
+// Adds message to the UI
 const createNewMessage = (message, type) => {
   const listNode = document.createElement('li')
   listNode.classList.add(type)
@@ -14,10 +15,11 @@ const createNewMessage = (message, type) => {
   chatbot.appendChild(listNode)
 }
 
-
+// Establish connection with socket
 const initializeConversation = () => {
   socket = io.connect('http://localhost:8000')
   socket.on('dialogflow message', data => createNewMessage(data, 'agent'))
+  // Remove event handler to prevent multiple connections
   initializeConversationBtn.removeEventListener('click', initializeConversation)
 }
 
@@ -26,9 +28,6 @@ initializeConversationBtn.addEventListener('click', initializeConversation)
 const submitOption = (value) => {
   options.remove()
   createNewMessage(value, 'human')
-  // if (value === "Wanneer begint 't weekend?") {
-  //   return setTimeout(() => checkWeekend(), 1000)
-  // }
   socket.emit('message', value)
 }
 
@@ -40,6 +39,8 @@ form.addEventListener('submit', (e) => {
   sumbitButton.setAttribute('disabled', '')
 })
 
+// Event listener disables submit button
+// to prevent user from sending empty messages
 input.addEventListener('input', (e) => {
   const { value } = e.srcElement
   if (value.length > 0 && sumbitButton.hasAttribute('disabled')) {
@@ -48,24 +49,3 @@ input.addEventListener('input', (e) => {
     sumbitButton.setAttribute('disabled', '')
   }
 })
-
-const countDownDate = new Date('Jun 7, 2019 17:45:00').getTime()
-
-const checkWeekend = () => {
-  const now = new Date().getTime()
-
-  const distance = countDownDate - now
-
-  // const days = Math.floor(distance / (1000 * 60 * 60 * 24))
-  const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-  const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-  const seconds = Math.floor((distance % (1000 * 60)) / 1000)
-
-  const message = `Nog ${hours} uur, ${minutes} minuten en ${seconds} seconden 🎉🍻`
-  createNewMessage(message, 'agent')
-
-  if (distance < 0) {
-    clearInterval(x)
-    createNewMessage('Weekend kan beginnen', 'agent')
-  }
-}
