@@ -1,0 +1,58 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema superkraft_chatbot
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema superkraft_chatbot
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `superkraft_chatbot` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+USE `superkraft_chatbot` ;
+
+-- -----------------------------------------------------
+-- Table `superkraft_chatbot`.`conversation`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `superkraft_chatbot`.`conversation` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `start` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `end` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `idconversations_UNIQUE` (`id` ASC) VISIBLE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 50
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `superkraft_chatbot`.`message`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `superkraft_chatbot`.`message` (
+  `id` INT(11) NOT NULL AUTO_INCREMENT,
+  `text` TEXT NOT NULL,
+  `sender_type` ENUM('human', 'agent') NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `conversation_id` INT(11) NOT NULL,
+  PRIMARY KEY (`id`, `conversation_id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE,
+  INDEX `fk_message_conversation_idx` (`conversation_id` ASC) VISIBLE,
+  CONSTRAINT `fk_message_conversation`
+    FOREIGN KEY (`conversation_id`)
+    REFERENCES `superkraft_chatbot`.`conversation` (`id`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 77
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

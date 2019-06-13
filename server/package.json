@@ -8,9 +8,8 @@
     "eslint": ">=5.16.0"
   },
   "scripts": {
-    "start": "node index.js",
-    "start:dev": "NODE_ENV=development DF_PROJECT_ID=superkraft-faa4d DF_SERVICE_ACCOUNT_PATH=./dialogflowKey.json nodemon index.js",
-    "start:app": "concurrently \"yarn start:dev\" \"cd ../client && yarn start\""
+    "start": "NODE_ENV=production DF_PROJECT_ID=superkraft-faa4d DF_SERVICE_ACCOUNT_PATH=./dialogflowKey.json node index.js",
+    "start:dev": "NODE_ENV=development DF_PROJECT_ID=superkraft-faa4d DF_SERVICE_ACCOUNT_PATH=./dialogflowKey.json nodemon index.js"
   },
   "author": "Lars Follet",
   "license": "ISC",
