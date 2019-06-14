@@ -3,6 +3,7 @@ const chatbot = document.querySelector('.chatbot')
 const form = document.querySelector('form')
 const input = document.querySelector('form > input')
 const options = document.querySelector('.options')
+const optionsInput = document.querySelectorAll('.options > input')
 const sumbitButton = document.querySelector('input[type="submit"]')
 const initializeConversationBtn = document.querySelector('.initialize-conversation')
 
@@ -21,9 +22,10 @@ const initializeConversation = () => {
   socket.on('dialogflow message', data => createNewMessage(data, 'agent'))
   // Remove event handler to prevent multiple connections
   initializeConversationBtn.removeEventListener('click', initializeConversation)
+  initializeConversationBtn.setAttribute('disabled', '')
+  optionsInput.forEach(option => option.removeAttribute('disabled'))
+  input.removeAttribute('disabled')
 }
-
-initializeConversationBtn.addEventListener('click', initializeConversation)
 
 const submitOption = (value) => {
   options.remove()
@@ -41,11 +43,11 @@ form.addEventListener('submit', (e) => {
 
 // Event listener disables submit button
 // to prevent user from sending empty messages
-input.addEventListener('input', (e) => {
+const onInput = (e) => {
   const { value } = e.srcElement
   if (value.length > 0 && sumbitButton.hasAttribute('disabled')) {
     sumbitButton.removeAttribute('disabled')
   } else if (value.length <= 0 && !sumbitButton.hasAttribute('disabled')) {
     sumbitButton.setAttribute('disabled', '')
   }
-})
+}

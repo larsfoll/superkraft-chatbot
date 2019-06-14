@@ -17,10 +17,12 @@ const Conversation = {
     // Select a maximum of 10 rows with each fetch request
     // The results variable is sent from the front end and will also increment with 10 times each
     // First time the rows 1 to 10 will be fetched, next time 11 to 20…
-    const query = `SELECT * FROM \`conversation\` ORDER BY \`${sort}\` ${sort === 'start' ? 'ASC' : 'DESC'} LIMIT ?,10;`
-    db.query(query, [
-      results
-    ], (error, response) => {
+    const date = req.query.date ? req.query.date : null
+    const query = date
+      ? `SELECT * FROM \`conversation\` WHERE DATE(\`start\`) = ? ORDER BY \`${sort}\` ${sort === 'start' ? 'DESC' : 'ASC'} LIMIT ?,10;`
+      : `SELECT * FROM \`conversation\` ORDER BY \`${sort}\` ${sort === 'start' ? 'DESC' : 'ASC'} LIMIT ?,10;`
+    const values = date ? [date, results] : [results]
+    db.query(query, values, (error, response) => {
       if (error) {
         res.json(error)
       }
@@ -40,6 +42,18 @@ const Conversation = {
         res.json(error)
       }
       else {
+        let result = JSON.stringify(response)
+        result = JSON.parse(result)
+        res.json(result)
+      }
+    })
+  },
+  getConversationsByDate: (req, res) => {
+    db.query('SELECT * FROM `conversation` WHERE DATE(`start`) = ?;', [req.query.date], (error, response) => {
+      if (error) {
+        res.json(error)
+      } else {
+        console.log('')
         let result = JSON.stringify(response)
         result = JSON.parse(result)
         res.json(result)

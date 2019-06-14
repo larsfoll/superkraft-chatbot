@@ -35,7 +35,6 @@ const formatTime = (time, type = null) => {
   minutes = (minutes < 10 ? '0' : '') + minutes
   let formattedTimeString = `${dayName} ${day} ${month}. ${year} om ${hours}:${minutes}`
 
-  console.log('time ', date)
   switch (type) {
     case 'start':
       formattedTimeString = `Start: ${formattedTimeString}`
@@ -209,10 +208,10 @@ selectDateButton.addEventListener('change', (e) => {
 })
 
 // Reset and fetch again with defaults
-deleteFiltersBtn.addEventListener('click', () => {
-  results = 0
-  sort = null
-  date = null
-  allConversationsFetched = false
-  fetchConversations
-})
+// deleteFiltersBtn.addEventListener('click', () => {
+//   results = 0
+//   sort = null
+//   date = null
+//   allConversationsFetched = false
+//   fetchConversations
+// })
