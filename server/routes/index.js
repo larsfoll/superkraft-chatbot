@@ -6,4 +6,5 @@ module.exports = (app) => {
 
   app.route('/conversations/:id')
     .get(ConversationController.getConversationById)
+    .delete(ConversationController.deleteConversation)
 }

@@ -2,12 +2,20 @@ const baseUrl = 'http://localhost:8000'
 const conversationsWrapper = document.querySelector('.conversations-wrapper')
 const conversationsList = document.querySelector('.conversations-wrapper > ul')
 const conversation = document.querySelector('.conversations-wrapper .conversation')
+const deleteConversationButton = document.querySelector('.remove-conversation')
+const sortByOldBtn = document.querySelector('.sort-by-old')
+const sortByNewBtn = document.querySelector('.sort-by-new')
 const weekdays = new Array('zo', 'ma', 'di', 'wo', 'do', 'vr', 'za')
 const months = new Array('dec', 'jan', 'feb', 'mrt', 'apr', 'jun', 'jul', 'aug', 'sept', 'okt', 'nov')
 let currentConversationId;
-let socket;
-let results = 0;
+let socket
+let results = 0
+let sort
 let allConversationsFetched = false
+
+// Initial conversations are sorted by newest first
+// So set initial state of button
+sortByNewBtn.classList.add('active')
 
 // Format time based on type
 const formatTime = (time, type = null) => {
@@ -55,42 +63,13 @@ const createMessage = (message) => {
   conversationMessages.appendChild(listItem)
 }
 
-// Open a conversation
-const openConversation = (id, element) => {
-  // If the current conversation id is equal to the selected id
-  // there is no need to continue so stop the function
-  if (currentConversationId === id) return
-
-  const active = document.querySelector('.active')
-  if (active) {
-    // Remove active class from previous active element
-    active.classList.remove('active')
-  }
-  element.classList.toggle('active')
-  currentConversationId = id
-
-  fetch(`${baseUrl}/conversations/${id}`)
-    .then(response => response.json())
-    .then(messages => {
-      // Remove messages from the current conversation and add the new messages
-
-      // Select conversation
-      const conversationMessages = document.querySelector('.conversation > ul')
-      // Make a clone with no children
-      const conversationMessagesClone = conversationMessages.cloneNode(false)
-      // Replace the old conversation with the empty clone
-      // Otherwise the messages from the previous conversation would still be in the div
-      // And the new ones would be pushed to the div along with the old ones
-      conversationMessages.parentNode.replaceChild(conversationMessagesClone, conversationMessages)
-      messages.forEach(message => createMessage(message))
-    })
-    // Always scroll to bottom of conversation on load
-    .then(() => scrollToBottom())
-}
-
 // Adds a conversation to the list
 const addListItem = (conversation) => {
   const listItem = document.createElement('li')
+  const idElement = document.createElement('p')
+  const idText = document.createTextNode(`#${conversation.id}`)
+  idElement.appendChild(idText)
+  listItem.appendChild(idElement)
 
   listItem.classList.add(conversation.id)
   listItem.addEventListener('click', () => openConversation(conversation.id, listItem))
@@ -104,19 +83,40 @@ const addListItem = (conversation) => {
   conversationsList.appendChild(listItem)
 }
 
-// Fetch the conversations
-const fetchConversations = () => fetch(`${baseUrl}/conversations?results=${results}`)
-  .then(response => response.json())
-  .then(conversations => {
-    // When there are no more conversations to be fetched set var to true
-    // To remove the event listener onScrollConversationsList
-    if (conversations.length === 0) {
-      allConversationsFetched = true
-    }
-    conversations.forEach(single => addListItem(single))
-  })
+// Open a conversation
+const openConversation = (id, element) => {
+  // If the current conversation id is equal to the selected id
+  // there is no need to continue so stop the function
+  if (currentConversationId === id) return
+  currentConversationId = id
+  const active = document.querySelector('.conversations-wrapper > ul > li.active')
+  if (active) {
+    // Remove active class from previously active element
+    active.classList.remove('active')
+  }
+  element.classList.toggle('active')
 
-const scrollToBottom = () => conversation.scrollTop = conversation.scrollHeight
+  fetch(`${baseUrl}/conversations/${id}`)
+    .then(response => response.json())
+    .then(messages => {
+      // Remove messages from the current conversation and add the new messages
+      // Select conversation
+      const conversationMessages = document.querySelector('.conversation > ul')
+      // Make a clone with no children
+      const conversationMessagesClone = conversationMessages.cloneNode(false)
+      // Replace the old conversation with the empty clone
+      // Otherwise the messages from the previous conversation would still be in the div
+      // And the new ones would be pushed to the div along with the old ones
+      conversationMessages.parentNode.replaceChild(conversationMessagesClone, conversationMessages)
+      messages.forEach(message => createMessage(message))
+    })
+    // Always scroll to bottom of conversation on load
+    // And enable the delete button
+    .then(() => {
+      scrollToBottom()
+      enableDeleteConversationButton()
+    })
+}
 
 // When the user scrolls to the bottom of the list the next conversations will be fetched
 const onScrollConversationsList = () => {
@@ -133,6 +133,63 @@ const onScrollConversationsList = () => {
   }
 }
 
-document.addEventListener('load', fetchConversations())
+// Fetch the conversations
+const fetchConversations = () => {
+  if (sort && results === 0) {
+    // Empty the list
+    while (conversationsList.hasChildNodes()) {
+      conversationsList.removeChild(conversationsList.lastChild)
+    }
+    allConversationsFetched = false
+    conversationsList.addEventListener('scroll', onScrollConversationsList)
+  }
+  fetch(`${baseUrl}/conversations?results=${results}&sort=${sort ? sort : ''}`)
+    .then(response => response.json())
+    .then(conversations => {
+      // When there are no more conversations to be fetched set var to true
+      // To remove the event listener onScrollConversationsList
+      if (conversations.length === 0) {
+        allConversationsFetched = true
+      }
+      conversations.forEach(single => addListItem(single))
+    })
+}
 
+const scrollToBottom = () => conversation.scrollTop = conversation.scrollHeight
+
+// Sort conversation by old or new
+const sortBy = (e, type) => {
+  const activeSortButton = document.querySelector('.buttons-wrapper button.active')
+  if (activeSortButton) {
+    activeSortButton.classList.remove('active')
+  }
+  e.target.classList.toggle('active')
+  results = 0
+  sort = type
+  allConversationsFetched = false
+  fetchConversations()
+}
+
+const enableDeleteConversationButton = () => {
+  deleteConversationButton.classList.add('enabled')
+  deleteConversationButton.addEventListener('click', deleteConversation)
+}
+
+const deleteConversation = () => fetch(`${baseUrl}/conversations/${currentConversationId}`, {
+  method: 'DELETE'
+})
+  .then(response => response.json())
+  .then(() => {
+    deleteConversationButton.classList.remove('enabled')
+    const active = document.querySelector('.conversations-wrapper > ul > li.active')
+    active.remove()
+  })
+
+
+/**
+  * Event listeners
+  */
+sortByOldBtn.addEventListener('click', (e) => sortBy(e, 'end'))
+sortByNewBtn.addEventListener('click', (e) => sortBy(e, 'start'))
+document.addEventListener('load', fetchConversations())
 conversationsList.addEventListener('scroll', onScrollConversationsList)

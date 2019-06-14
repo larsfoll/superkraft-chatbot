@@ -13,10 +13,12 @@ const Conversation = {
   getConversations: (req, res) => {
     let results = req.query.results ? req.query.results : 0
     results = JSON.parse(results)
+    const sort = req.query.sort ? req.query.sort : 'start'
     // Select a maximum of 10 rows with each fetch request
     // The results variable is sent from the front end and will also increment with 10 times each
     // First time the rows 1 to 10 will be fetched, next time 11 to 20…
-    db.query('SELECT * FROM `conversation` ORDER BY `start` DESC LIMIT ?,10;', [
+    const query = `SELECT * FROM \`conversation\` ORDER BY \`${sort}\` ${sort === 'start' ? 'ASC' : 'DESC'} LIMIT ?,10;`
+    db.query(query, [
       results
     ], (error, response) => {
       if (error) {
@@ -94,6 +96,21 @@ const Conversation = {
       return result
     } catch (error) {
       return 'Er ging iets fout probeer later opnieuw.'
+    }
+  },
+  deleteConversation: (req, res) => {
+    try {
+      db.query('DELETE FROM `message` WHERE `conversation_id` = ?;', [req.params.id], (error, response) => {
+        if (error) throw error
+        if (response) {
+          db.query('DELETE FROM `conversation` WHERE `id` = ?;', [req.params.id], (error, results) => {
+            if (error) throw error
+            res.json('Conversatie verwijderd.')
+          })
+        }
+      })
+    } catch (error) {
+      res.json('Er ging iets fout bij het verwijderen, probeer later opnieuw.')
     }
   }
 }
